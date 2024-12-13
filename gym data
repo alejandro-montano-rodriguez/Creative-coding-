@@ -1,0 +1,116 @@
+String[] dias = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+String[] entrenamientos = {"Leg", "Chest/Triceps", "Back/Biceps", "Shoulders/Cardio"};
+String[] meses = {"Septiembre", "October", "November"};
+String[] semanas = {"Week 1", "Week 2", "Week 3", "Week 4"};
+int[][] datos = {
+  {1, 0, 2, 0, 3, 4}, // w 1, sept
+  {0, 1, 0, 2, 4, 0}, // w 2, sept
+  {1, 0, 2, 0, 3, 0}, // w 3, sept
+  {4, 1, 0, 2, 3, 0}, // w 4, sept
+  {1, 0, 2, 0, 3, 4}, // w 1, oct
+  {0, 1, 0, 2, 4, 3}, // w 2oct
+  {1, 0, 2, 0, 0, 4}, // w3, oct
+  {0, 1, 0, 2, 3, 4}, // w 4, oct
+  {1, 0, 2, 0, 3, 4}, // w 1, nov
+  {0, 1, 0, 2, 3, 0}, // w 2, nov
+  {1, 0, 2, 0, 3, 4}, // w 3, nov
+  {4, 1, 0, 2, 3, 0}  //w 4, nov
+};
+
+float[] xOffset, yOffset; 
+boolean[] hovering; 
+void setup() {
+  size(1400, 850); 
+  xOffset = new float[dias.length * datos.length];
+  yOffset = new float[dias.length * datos.length];
+  hovering = new boolean[dias.length * datos.length];
+  textSize(12);
+  noStroke();
+}
+
+void draw() {
+  
+  for (int y = 0; y < height; y++) {
+    float inter = map(y, 0, height, 0, 1);
+    color c = lerpColor(color(255, 223, 186), color(186, 225, 255), inter);
+    stroke(c);
+    line(0, y, width, y);
+  }
+  int radius = 20;
+  int spacing = 160;
+  float jitter = 0.5; 
+  int ySpacing = 60; 
+  int xBase = 180;
+  int yBase = 20;
+  
+  for (int i = 0; i < datos.length; i++) {
+    for (int j = 0; j < dias.length; j++) {
+      int idx = i * dias.length + j;
+      
+      if (hovering[idx]) {
+        xOffset[idx] = 0;
+        yOffset[idx] = 0;
+      } else {
+        xOffset[idx] += random(-jitter, jitter);
+        yOffset[idx] += random(-jitter, jitter);
+      }
+
+      if (datos[i][j] != 0) {
+        fill(getColor(datos[i][j]));
+        ellipse(j * spacing + xOffset[idx] + xBase, i * ySpacing + yOffset[idx] + yBase, radius * 2, radius * 2);
+        fill(0);
+        textAlign(CENTER, TOP);
+        text(dias[j], j * spacing + xOffset[idx] + xBase, i * ySpacing + yOffset[idx] + radius + yBase + 3); // Ajuste de la posición del texto más cerca del círculo
+      }
+    }
+  }
+  
+  for (int i = 0; i < datos.length; i++) {
+    int mesIndex = i / 4; // Índice del mes
+    int semanaIndex = i % 4; // Índice de la semana
+    fill(0);
+    textAlign(LEFT, CENTER);
+    text(meses[mesIndex] + " - " + semanas[semanaIndex], 10, i * ySpacing + yBase + 10); // Texto de semana y mes
+  }
+
+  checkMouseHover();
+}
+void checkMouseHover() {
+  int radius = 20;
+  int spacing = 160;
+  int ySpacing = 60; 
+  int xBase = 180;
+  int yBase = 20;
+
+  for (int i = 0; i < datos.length; i++) {
+    for (int j = 0; j < dias.length; j++) {
+      int idx = i * dias.length + j;
+      float x = j * spacing + xOffset[idx] + xBase;
+      float y = i * ySpacing + yOffset[idx] + yBase;
+      if (datos[i][j] != 0 && dist(mouseX, mouseY, x, y) < radius) {
+        hovering[idx] = true;
+        fill(50, 50, 50, 200);
+        rect(mouseX - 75, mouseY - 20, 150, 30);
+        fill(255);
+        textAlign(CENTER, CENTER);
+        text(entrenamientos[datos[i][j] - 1], mouseX, mouseY - 5);
+      } else {
+        hovering[idx] = false;
+      }
+    }
+  }
+}
+
+color getColor(int tipoEntrenamiento) {
+  switch (tipoEntrenamiento) {
+    case 1: return color(255, 100, 100); 
+    case 2: return color(100, 255, 100); 
+    case 3: return color(100, 100, 255); 
+    case 4: return color(255, 255, 100); 
+    default: return color(200, 200, 200); 
+  }
+}
+
+void mouseMoved() {
+  redraw();
+}
